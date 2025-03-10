@@ -57,3 +57,15 @@ air init
 ```bash
 air
 ```
+
+
+## Setup db
+- Command to setup DB Postgre
+```bash
+go get github.com/jackc/pgx/v5
+go get github.com/jackc/pgx/v5/pgxpool
+go get github.com/joho/godotenv
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/postgres
+go get github.com/lib/pq
+```

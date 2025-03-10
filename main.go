@@ -1,12 +1,23 @@
 package main
 
 import (
+	"backend_go/db"
 	"backend_go/routes"
+	"fmt"
+	"log"
 )
 
 func main() {
-	r := routes.SetupRouter()
-	routes.SetupRouter()
+	db.ConnectDB()
 
+	DBConn, err := db.DB.DB()
+	if err != nil {
+		log.Fatalf("❌ Failed to get database connection: %v", err)
+	}
+	defer DBConn.Close()
+
+	r := routes.SetupRouter()
+
+	fmt.Println("🚀 Server running on port 8000")
 	r.Run(":8000")
 }
