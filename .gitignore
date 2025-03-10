@@ -1,0 +1,25 @@
+# Binary files
+*.exe
+*.out
+*.o
+*.a
+*.so
+*.dll
+
+# Go build cache
+/tmp/
+*.log
+
+# Go module cache
+/go/pkg/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+
+# Dependencies
+/vendor/
