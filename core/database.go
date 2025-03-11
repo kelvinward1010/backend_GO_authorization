@@ -35,7 +35,12 @@ func ConnectDB() {
 		log.Fatalf("❌ Failed to connect to database: %v", err)
 	}
 
-	err = db.AutoMigrate(&models.Product{})
+	modelsToMigrate := []interface{}{
+		&models.User{},
+		&models.Product{},
+	}
+
+	err = db.AutoMigrate(modelsToMigrate...)
 	if err != nil {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
