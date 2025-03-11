@@ -12,11 +12,22 @@ import (
 func ProductRoutes(r *gin.RouterGroup) {
 	products := r.Group("/products")
 	{
-		products.Use(middleware.AuthMiddlewareFlexible())
 		products.GET("/", services.GetProducts)
 		products.GET("/:id", services.GetProductByID)
-		products.POST("/", permissions.RequirePermissions(constants.PermissionProductsCreate), services.CreateProduct)
-		products.PATCH("/:id", permissions.RequirePermissions(constants.PermissionProductsUpdate), services.UpdateProduct)
-		products.DELETE("/:id", permissions.RequirePermissions(constants.PermissionProductsDelete), services.DeleteProduct)
+	}
+
+	protected := r.Group("/products").Use(
+		middleware.AuthMiddlewareFlexible(),
+	)
+	{
+		protected.POST("/", permissions.RequirePermissions(constants.PermissionProductsCreate), services.CreateProduct)
+		protected.PATCH("/:id",
+			permissions.RequirePermissions(constants.PermissionProductsUpdate),
+			services.UpdateProduct,
+		)
+		protected.DELETE("/:id",
+			permissions.RequirePermissions(constants.PermissionProductsDelete),
+			services.DeleteProduct,
+		)
 	}
 }

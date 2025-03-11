@@ -71,6 +71,31 @@ go get github.com/jackc/pgx/v5/pgxpool
 go get github.com/joho/godotenv
 go get -u gorm.io/gorm
 go get -u gorm.io/driver/postgres
+```
+
+
+## Setup JWT
+```bash
 go get github.com/lib/pq
 go get github.com/golang-jwt/jwt/v5
+```
+
+
+## Setup Swagger for GIN
+```bash
+go get -u github.com/swaggo/gin-swagger
+go get -u github.com/swaggo/files
+go get -u github.com/swaggo/swag/cmd/swag
+```
+
+- Install SWAG
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+- After that run this command:
+```bash
+swag init
+swag init -g main.go
+swag init -g main.go -o ./app/docs
 ```
