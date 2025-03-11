@@ -9,7 +9,7 @@ import (
 func AuthRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
 	{
-		auth.POST("/", services.Register)
-		auth.POST("/", services.Login)
+		auth.POST("/register", services.Register)
+		auth.POST("/login", services.Login)
 	}
 }
