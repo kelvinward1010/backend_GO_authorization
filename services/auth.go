@@ -3,6 +3,7 @@ package services
 import (
 	"backend_go/core"
 	"backend_go/models"
+	"backend_go/models/schemas"
 	"backend_go/utils"
 	"net/http"
 
@@ -32,29 +33,34 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	var userInput models.User
+	var req schemas.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request: "+err.Error())
+		return
+	}
+
 	var user models.User
-
-	if err := c.ShouldBindJSON(&userInput); err != nil {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid input")
+	if err := core.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 
-	if err := core.DB.Where("username = ?", userInput.Username).First(&user).Error; err != nil {
-		utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
+	if !core.CheckPassword(user.Password, req.Password) {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid password")
 		return
 	}
 
-	if !core.CheckPassword(user.Password, userInput.Password) {
-		utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
-		return
-	}
-
-	token, err := core.GenerateToken(user.Username)
+	token, err := core.GenerateToken(int(user.ID), user.Username, user.Role)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to generate token")
 		return
 	}
 
-	utils.SendResponse(c, http.StatusOK, "Login successful", gin.H{"token": token})
+	user.Password = ""
+
+	utils.SendResponse(c, http.StatusOK, "Login successful", gin.H{
+		"user":  user,
+		"token": token,
+	})
 }

@@ -18,9 +18,11 @@ func CheckPassword(hashedPassword, password string) bool {
 	return err == nil
 }
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(userID int, username string, role string) (string, error) {
 	claims := jwt.MapClaims{
+		"user_id":  userID,
 		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 
@@ -41,10 +43,11 @@ func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	return token, claims, nil
 }
 
-func GenerateTokenWithID(userID int, username string) (string, error) {
+func GenerateTokenWithID(userID int, username string, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":  userID,
 		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 

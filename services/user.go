@@ -15,6 +15,29 @@ func GetUsers(c *gin.Context) {
 	utils.SendResponse(c, http.StatusOK, "Users retrieved successfully", users)
 }
 
+func CreateUser(c *gin.Context) {
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request data")
+		return
+	}
+
+	if user.Username == "" || user.Email == "" || user.Password == "" {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Username, email, and password are required")
+		return
+	}
+
+	hashedPassword, _ := core.HashPassword(user.Password)
+	user.Password = hashedPassword
+
+	if err := core.DB.Create(&user).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Error creating user")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusCreated, "User created successfully", user)
+}
+
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User

@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"backend_go/models"
+	"backend_go/permissions"
 )
 
 var DB *gorm.DB
@@ -38,12 +39,16 @@ func ConnectDB() {
 	modelsToMigrate := []interface{}{
 		&models.User{},
 		&models.Product{},
+		&models.Role{},
+		&models.Permission{},
 	}
 
 	err = db.AutoMigrate(modelsToMigrate...)
 	if err != nil {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
+
+	permissions.SeedRolesAndPermissions(db)
 
 	DB = db
 	fmt.Println("✅ Database connected and migrated successfully!")
