@@ -4,7 +4,6 @@ import (
 	"backend_go/core"
 	"backend_go/models"
 	"backend_go/utils"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -68,8 +67,6 @@ func AuthMiddlewareFlexible() gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println("Token claims:", claims)
-
 		userID, ok := claims["user_id"].(float64)
 		if !ok {
 			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: Invalid token payload")
@@ -95,8 +92,6 @@ func AuthMiddlewareFlexible() gin.HandlerFunc {
 		for i, perm := range role.Permissions {
 			userPermissions[i] = perm.Name
 		}
-
-		fmt.Println(userID, roleName, userPermissions)
 
 		c.Set("user_id", int(userID))
 		c.Set("role", roleName)
