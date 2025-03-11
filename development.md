@@ -57,6 +57,10 @@ air init
 ```bash
 air
 ```
+or
+```bash
+air -c .air.toml
+```
 
 
 ## Setup db
