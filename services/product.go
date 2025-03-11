@@ -10,10 +10,22 @@ import (
 )
 
 func GetProducts(c *gin.Context) {
-	var products []models.Product
-	db.DB.Find(&products)
+	name := c.Query("name")
 
-	utils.SendResponse(c, http.StatusOK, "Product list retrieved successfully", products)
+	var products []models.Product
+	query := db.DB
+
+	if name != "" {
+		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%")
+	}
+
+	result := query.Find(&products)
+	if result.Error != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve products")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusOK, "Products retrieved successfully", products)
 }
 
 func GetProductByID(c *gin.Context) {
