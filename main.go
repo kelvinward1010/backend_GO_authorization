@@ -1,7 +1,7 @@
 package main
 
 import (
-	"backend_go/db"
+	db "backend_go/core"
 	"backend_go/routes"
 	"fmt"
 	"log"

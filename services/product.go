@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend_go/db"
+	db "backend_go/core"
 	"backend_go/models"
 	"backend_go/utils"
 	"net/http"

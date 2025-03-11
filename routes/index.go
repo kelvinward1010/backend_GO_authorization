@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
@@ -14,6 +15,7 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api/v1")
 	ProductRoutes(api)
+	AuthRoutes(api)
 
 	return r
 }
