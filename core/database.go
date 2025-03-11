@@ -9,8 +9,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"backend_go/app/permissions"
 	"backend_go/models"
-	"backend_go/permissions"
 )
 
 var DB *gorm.DB

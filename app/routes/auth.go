@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"backend_go/services"
+	"backend_go/app/services"
 
 	"github.com/gin-gonic/gin"
 )

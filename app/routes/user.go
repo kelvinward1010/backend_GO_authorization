@@ -1,9 +1,9 @@
 package routes
 
 import (
+	middleware "backend_go/app/middlewares"
+	"backend_go/app/services"
 	"backend_go/constants"
-	middleware "backend_go/middlewares"
-	"backend_go/services"
 
 	"github.com/gin-gonic/gin"
 )
