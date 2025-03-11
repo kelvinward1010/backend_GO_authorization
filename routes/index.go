@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 	api := r.Group("/api/v1")
 	ProductRoutes(api)
 	AuthRoutes(api)
+	UserRoutes(api)
 
 	return r
 }
