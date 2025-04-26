@@ -18,6 +18,7 @@ func SetupRouter() *gin.Engine {
 	routes.ProductRoutes(api)
 	routes.AuthRoutes(api)
 	routes.UserRoutes(api)
+	routes.PermissionRoutes(api)
 
 	return r
 }
