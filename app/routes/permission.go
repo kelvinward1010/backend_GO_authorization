@@ -18,7 +18,7 @@ func PermissionRoutes(r *gin.RouterGroup) {
 		services.GetRoles,
 	)
 
-	permissionsGroup.POST("/",
+	permissionsGroup.PATCH("/",
 		middleware.AuthMiddlewareFlexible(),
 		permissions.RequirePermissions(constants.PermissionRolesUpdate),
 		services.UpdateRolePermissions,

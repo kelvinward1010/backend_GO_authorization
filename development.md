@@ -99,3 +99,5 @@ swag init
 swag init -g main.go
 swag init -g main.go -o ./app/docs
 ```
+
+- Open swagger on: http://localhost:8000/swagger/index.html#/
