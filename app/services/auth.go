@@ -51,7 +51,11 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := core.GenerateToken(int(user.ID), user.Username, user.Role)
+	permissionNames := make([]string, len(user.Permissions))
+	for i, perm := range user.Permissions {
+		permissionNames[i] = perm.Name
+	}
+	token, err := core.GenerateTokenWithPermissions(int(user.ID), user.Username, user.Role, permissionNames)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to generate token")
 		return

@@ -10,6 +10,7 @@ import (
 
 func UserRoutes(r *gin.RouterGroup) {
 	users := r.Group("/user")
+	users.Use(middleware.AuthMiddlewareFlexible())
 	{
 		users.GET("/", middleware.RequireRoles(constants.RoleAdmin), services.GetUsers)
 		users.GET("/:id", middleware.RequireRoles(constants.RoleAdmin), services.GetUserByID)

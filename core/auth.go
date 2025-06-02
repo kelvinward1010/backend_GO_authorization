@@ -30,6 +30,19 @@ func GenerateToken(userID int, username string, role string) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
+func GenerateTokenWithPermissions(userID int, username string, role string, permissions []string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id":     userID,
+		"username":    username,
+		"role":        role,
+		"permissions": permissions,
+		"exp":         time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+}
+
 func VerifyToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

@@ -59,7 +59,6 @@ func AuthMiddlewareFlexible() gin.HandlerFunc {
 		}
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-
 		_, claims, err := core.VerifyToken(tokenString)
 		if err != nil {
 			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: Invalid token")
@@ -82,20 +81,27 @@ func AuthMiddlewareFlexible() gin.HandlerFunc {
 		}
 
 		var role models.Role
-		if err := core.DB.Preload("Permissions").Where("name = ?", roleName).First(&role).Error; err != nil {
-			utils.SendErrorResponse(c, http.StatusInternalServerError, "Error fetching role permissions")
-			c.Abort()
-			return
+		core.DB.Preload("Permissions").Where("name = ?", roleName).First(&role)
+
+		var user models.User
+		core.DB.Preload("Permissions").First(&user, int(userID))
+
+		rolePerms := map[string]struct{}{}
+		for _, p := range role.Permissions {
+			rolePerms[p.Name] = struct{}{}
+		}
+		for _, p := range user.Permissions {
+			rolePerms[p.Name] = struct{}{}
 		}
 
-		userPermissions := make([]string, len(role.Permissions))
-		for i, perm := range role.Permissions {
-			userPermissions[i] = perm.Name
+		var allPerms []string
+		for p := range rolePerms {
+			allPerms = append(allPerms, p)
 		}
 
 		c.Set("user_id", int(userID))
 		c.Set("role", roleName)
-		c.Set("permissions", userPermissions)
+		c.Set("permissions", allPerms)
 
 		c.Next()
 	}

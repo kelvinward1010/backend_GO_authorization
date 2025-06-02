@@ -18,4 +18,6 @@ const (
 	PermissionRolesGet    = "roles:get"
 	PermissionRolesUpdate = "roles:update"
 	PermissionRolesDelete = "roles:delete"
+
+	PermissionPermissionsGet = "permissions:get"
 )

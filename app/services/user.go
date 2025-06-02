@@ -11,7 +11,29 @@ import (
 
 func GetUsers(c *gin.Context) {
 	var users []models.User
-	core.DB.Find(&users)
+
+	if err := core.DB.Preload("Permissions").Find(&users).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve users")
+		return
+	}
+
+	var roles []models.Role
+	if err := core.DB.Preload("Permissions").Find(&roles).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve roles")
+		return
+	}
+
+	roleMap := make(map[string]models.Role)
+	for _, role := range roles {
+		roleMap[role.Name] = role
+	}
+
+	for i := range users {
+		if role, exists := roleMap[users[i].Role]; exists {
+			users[i].Permissions = mergePermissions(role.Name, users[i].Permissions)
+		}
+	}
+
 	utils.SendResponse(c, http.StatusOK, "Users retrieved successfully", users)
 }
 
@@ -42,10 +64,12 @@ func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 
-	if err := core.DB.First(&user, id).Error; err != nil {
+	if err := core.DB.Preload("Permissions").First(&user, id).Error; err != nil {
 		utils.SendErrorResponse(c, http.StatusNotFound, "User not found")
 		return
 	}
+
+	user.Permissions = mergePermissions(user.Role, user.Permissions)
 
 	utils.SendResponse(c, http.StatusOK, "User retrieved successfully", user)
 }
@@ -79,4 +103,28 @@ func DeleteUser(c *gin.Context) {
 
 	core.DB.Delete(&user)
 	utils.SendResponse(c, http.StatusOK, "User deleted successfully", nil)
+}
+
+func mergePermissions(roleName string, userPerms []models.Permission) []models.Permission {
+	var role models.Role
+	core.DB.Preload("Permissions").Where("name = ?", roleName).First(&role)
+
+	permMap := make(map[string]models.Permission)
+
+	// Thêm quyền từ role chính
+	for _, perm := range role.Permissions {
+		permMap[perm.Name] = perm
+	}
+
+	// Thêm quyền trực tiếp từ user
+	for _, perm := range userPerms {
+		permMap[perm.Name] = perm
+	}
+
+	// Chuyển map về slice
+	var mergedPerms []models.Permission
+	for _, perm := range permMap {
+		mergedPerms = append(mergedPerms, perm)
+	}
+	return mergedPerms
 }

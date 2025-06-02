@@ -14,5 +14,5 @@ type Permission struct {
 }
 
 func MigrateRolesAndPermissions(db *gorm.DB) {
-	db.AutoMigrate(&Role{}, &Permission{})
+	db.AutoMigrate(&User{}, &Role{}, &Permission{})
 }

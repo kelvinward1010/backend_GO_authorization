@@ -18,10 +18,22 @@ func PermissionRoutes(r *gin.RouterGroup) {
 		services.GetRoles,
 	)
 
+	permissionsGroup.GET("/all",
+		middleware.AuthMiddlewareFlexible(),
+		permissions.RequirePermissions(constants.PermissionRolesGet),
+		services.GetAllPermissions,
+	)
+
 	permissionsGroup.PATCH("/",
 		middleware.AuthMiddlewareFlexible(),
 		permissions.RequirePermissions(constants.PermissionRolesUpdate),
 		services.UpdateRolePermissions,
+	)
+
+	permissionsGroup.PATCH("/users/:id",
+		middleware.AuthMiddlewareFlexible(),
+		permissions.RequirePermissions(constants.PermissionUsersUpdate),
+		services.UpdateUserPermissions,
 	)
 
 	permissionsGroup.DELETE("/:id",

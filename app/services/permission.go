@@ -21,6 +21,16 @@ func GetRoles(c *gin.Context) {
 	utils.SendResponse(c, http.StatusOK, "Danh sách roles", roles)
 }
 
+func GetAllPermissions(c *gin.Context) {
+	var permissions []models.Permission
+	if err := core.DB.Find(&permissions).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to load permissions")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusOK, "Permissions fetched", permissions)
+}
+
 func UpdateRolePermissions(c *gin.Context) {
 	var request struct {
 		RoleID      int      `json:"role_id"`
@@ -53,6 +63,42 @@ func UpdateRolePermissions(c *gin.Context) {
 		"role_id":     role.ID,
 		"permissions": request.Permissions,
 	})
+}
+
+func UpdateUserPermissions(c *gin.Context) {
+	var req struct {
+		Permissions []string `json:"permissions"`
+	}
+
+	userID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	var user models.User
+	if err := core.DB.First(&user, userID).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	var permissions []models.Permission
+	if err := core.DB.Where("name IN ?", req.Permissions).Find(&permissions).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Error loading permissions")
+		return
+	}
+
+	if err := core.DB.Model(&user).Association("Permissions").Replace(permissions); err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update user permissions")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusOK, "User permissions updated", permissions)
 }
 
 func DeleteRole(c *gin.Context) {
