@@ -49,7 +49,7 @@ func UpdateRolePermissions(c *gin.Context) {
 	}
 
 	var permissions []models.Permission
-	if err := core.DB.Where("name IN (?)", request.Permissions).Find(&permissions).Error; err != nil {
+	if err := core.DB.Where("name IN ?", request.Permissions).Find(&permissions).Error; err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Error fetching permissions")
 		return
 	}
@@ -59,10 +59,12 @@ func UpdateRolePermissions(c *gin.Context) {
 		return
 	}
 
-	utils.SendResponse(c, http.StatusOK, "Role permissions updated successfully", gin.H{
-		"role_id":     role.ID,
-		"permissions": request.Permissions,
-	})
+	if err := core.DB.Preload("Permissions").First(&role, role.ID).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to reload updated role")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusOK, "Role permissions updated successfully", role)
 }
 
 func UpdateUserPermissions(c *gin.Context) {
@@ -98,7 +100,12 @@ func UpdateUserPermissions(c *gin.Context) {
 		return
 	}
 
-	utils.SendResponse(c, http.StatusOK, "User permissions updated", permissions)
+	if err := core.DB.Preload("Permissions").First(&user, user.ID).Error; err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to reload updated user")
+		return
+	}
+
+	utils.SendResponse(c, http.StatusOK, "User permissions updated", user)
 }
 
 func DeleteRole(c *gin.Context) {
@@ -109,12 +116,12 @@ func DeleteRole(c *gin.Context) {
 	}
 
 	var role models.Role
-	if err := core.DB.Where("id = ?", roleID).First(&role).Error; err != nil {
+	if err := core.DB.First(&role, roleID).Error; err != nil {
 		utils.SendErrorResponse(c, http.StatusNotFound, "Role does not exist")
 		return
 	}
 
-	if err := core.DB.Delete(&role).Error; err != nil {
+	if err := core.DB.Select("Permissions").Delete(&role).Error; err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Cannot delete role")
 		return
 	}

@@ -30,11 +30,11 @@ func GenerateToken(userID int, username string, role string) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
-func GenerateTokenWithPermissions(userID int, username string, role string, permissions []string) (string, error) {
+func GenerateTokenWithPermissions(userID int, username string, roles []string, permissions []string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":     userID,
 		"username":    username,
-		"role":        role,
+		"roles":       roles,
 		"permissions": permissions,
 		"exp":         time.Now().Add(time.Hour * 24).Unix(),
 	}

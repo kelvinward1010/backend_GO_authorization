@@ -11,21 +11,39 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var input models.User
+	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
-	hashedPassword, err := core.HashPassword(user.Password)
+	hashedPassword, err := core.HashPassword(input.Password)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to hash password")
 		return
 	}
-	user.Password = hashedPassword
+
+	user := models.User{
+		Username: input.Username,
+		Email:    input.Email,
+		Password: hashedPassword,
+	}
+
+	var roles []models.Role
+	roleIDs := []uint{}
+	for _, r := range input.Roles {
+		roleIDs = append(roleIDs, r.ID)
+	}
+	if len(roleIDs) > 0 {
+		if err := core.DB.Where("id IN ?", roleIDs).Find(&roles).Error; err != nil {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to fetch roles")
+			return
+		}
+		user.Roles = roles
+	}
 
 	if err := core.DB.Create(&user).Error; err != nil {
-		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to register user")
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to create user")
 		return
 	}
 
@@ -55,7 +73,13 @@ func Login(c *gin.Context) {
 	for i, perm := range user.Permissions {
 		permissionNames[i] = perm.Name
 	}
-	token, err := core.GenerateTokenWithPermissions(int(user.ID), user.Username, user.Role, permissionNames)
+
+	roleNames := make([]string, len(user.Roles))
+	for i, role := range user.Roles {
+		roleNames[i] = role.Name
+	}
+
+	token, err := core.GenerateTokenWithPermissions(int(user.ID), user.Username, roleNames, permissionNames)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to generate token")
 		return

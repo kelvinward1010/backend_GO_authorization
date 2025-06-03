@@ -9,18 +9,26 @@ import (
 
 func RequireRoles(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role, exists := c.Get("role")
-
+		rolesIface, exists := c.Get("roles")
 		if !exists {
-			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: Missing role")
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: Missing roles")
 			c.Abort()
 			return
 		}
 
-		for _, allowed := range allowedRoles {
-			if role == allowed {
-				c.Next()
-				return
+		roles, ok := rolesIface.([]string)
+		if !ok {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Internal error: Invalid roles format")
+			c.Abort()
+			return
+		}
+
+		for _, userRole := range roles {
+			for _, allowed := range allowedRoles {
+				if userRole == allowed {
+					c.Next()
+					return
+				}
 			}
 		}
 

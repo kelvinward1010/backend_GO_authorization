@@ -73,34 +73,35 @@ func AuthMiddlewareFlexible() gin.HandlerFunc {
 			return
 		}
 
-		roleName, ok := claims["role"].(string)
-		if !ok {
-			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: Missing role information")
+		var user models.User
+		if err := core.DB.Preload("Roles.Permissions").Preload("Permissions").First(&user, uint(userID)).Error; err != nil {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: User not found")
 			c.Abort()
 			return
 		}
 
-		var role models.Role
-		core.DB.Preload("Permissions").Where("name = ?", roleName).First(&role)
-
-		var user models.User
-		core.DB.Preload("Permissions").First(&user, int(userID))
-
-		rolePerms := map[string]struct{}{}
-		for _, p := range role.Permissions {
-			rolePerms[p.Name] = struct{}{}
+		permMap := make(map[string]struct{})
+		for _, role := range user.Roles {
+			for _, perm := range role.Permissions {
+				permMap[perm.Name] = struct{}{}
+			}
 		}
-		for _, p := range user.Permissions {
-			rolePerms[p.Name] = struct{}{}
+		for _, perm := range user.Permissions {
+			permMap[perm.Name] = struct{}{}
 		}
 
 		var allPerms []string
-		for p := range rolePerms {
-			allPerms = append(allPerms, p)
+		for name := range permMap {
+			allPerms = append(allPerms, name)
 		}
 
-		c.Set("user_id", int(userID))
-		c.Set("role", roleName)
+		var roleNames []string
+		for _, r := range user.Roles {
+			roleNames = append(roleNames, r.Name)
+		}
+
+		c.Set("user_id", uint(userID))
+		c.Set("roles", roleNames)
 		c.Set("permissions", allPerms)
 
 		c.Next()
