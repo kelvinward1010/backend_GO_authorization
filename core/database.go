@@ -17,8 +17,11 @@ var DB *gorm.DB
 
 func ConnectDB() {
 	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("❌ Error when loading file .env: %v", err)
+	if os.Getenv("ENV_MODE") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Println("⚠️  No .env file found, skipping...")
+		}
 	}
 
 	dsn := fmt.Sprintf(
