@@ -16,7 +16,7 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	err := godotenv.Load()
+	// Chỉ load file .env khi chạy local (không có ENV_MODE hoặc khác "production")
 	if os.Getenv("ENV_MODE") != "production" {
 		err := godotenv.Load()
 		if err != nil {
